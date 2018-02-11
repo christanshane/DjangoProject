@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<form action="post">
+<form method="POST">
     {% csrf_token %}
     <div class="form-group">
         <label for="id_subject">Subject</label>
