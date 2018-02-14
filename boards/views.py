@@ -1,4 +1,5 @@
 from .forms import NewTopicForm
+from django.db.models import Count
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from .forms import PostForm
@@ -54,3 +55,9 @@ def new_topic(request, pk):
 def topic_posts(request, pk, topic_pk):
     topic = get_object_or_404(Topic, board__pk=pk, pk=topic_pk)
     return render(request, 'topic_posts.html', {'topic': topic})
+
+def board_topics(request, pk):
+    board = get_object_or_404(Board, pk=pk)
+    topics = board.topics.order_by('-last_updated').annotate(replies=Count('posts'))
+    return render(request, 'topics.html', {'board':board, 'topics':topics})
+
