@@ -1,11 +1,13 @@
-from .forms import NewTopicForm
 from django.db.models import Count
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.generic import UpdateView
+
+
+
+from .forms import NewTopicForm
 from .forms import PostForm
-from .models import Topic
-
-
 from .models import Board, Topic, Post
 # Create your views here.
 
@@ -63,3 +65,16 @@ def board_topics(request, pk):
     topics = board.topics.order_by('-last_updated').annotate(replies=Count('posts'))
     return render(request, 'topics.html', {'board':board, 'topics':topics})
 
+class PostUpdateView(UpdateView):
+    model = Post
+    fields = ('message',)
+    template_name = 'edit_post.html'
+    pk_url_kwarg = 'post_pk'
+    context_object_name = 'post'
+
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.updated_by = self.request.user
+        post.updated_at = timezone.now()
+        post.save()
+        return redirect('topic_posts', pk=post.topic.board.pk, topic_pk=post.topic.pk)
